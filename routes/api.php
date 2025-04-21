@@ -200,12 +200,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get(
         '/batches/{batch}/semesters/{semester}/sections/{section}/teacher-assignments',
         [TeacherAssignmentController::class, 'index']
-    );
+    )->middleware('permission:' . PermissionEnum::VIEW_TEACHER_ASSIGNMENT->value);
 
     Route::post(
         '/batches/{batch}/semesters/{semester}/sections/{section}/teacher-assignments',
         [TeacherAssignmentController::class, 'store']
-    );
+    )->middleware('permission:' . PermissionEnum::CREATE_TEACHER_ASSIGNMENT->value);
 
     Route::put(
         '/batches/{batch}/semesters/{semester}/sections/{section}/teacher-assignments/{teacherAssignment}',

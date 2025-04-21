@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'last_name' => $this->last_name,
             'email' => $this->email,
             'username' => $this->username,
+            'permissions' => $this->getAllPermissions()->pluck('name'),
 
             'role' => $this->when($this->roles->count() > 0, function () {
                 return $this->roles->first()->name;

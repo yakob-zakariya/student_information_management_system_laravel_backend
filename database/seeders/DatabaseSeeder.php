@@ -18,11 +18,13 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create([
             'first_name' => 'Yakob',
             "middle_name" => "Zakariya",
-        "last_name" => "Aman",
+            "last_name" => "Aman",
             'email' => 'yysiyzx07@gmail.com',
             'password' => bcrypt('password'),
             'username' => 'ADM/1000/12'
         ]);
+
+
 
         $this->call([
             RoleSeeder::class,

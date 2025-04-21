@@ -78,4 +78,8 @@ enum Permission: string
     case ALLOCATE_COURSE = 'allocate-course';
     case DEALLOCATE_COURSE = 'deallocate-course';
     case VIEW_ALLOCATED_COURSE = 'view-allocated-course';
+
+
+    case VIEW_TEACHER_ASSIGNMENT = 'view-teacher-assignment';
+    case CREATE_TEACHER_ASSIGNMENT = 'create-teacher-assignment';
 }
