@@ -16,6 +16,8 @@ class Course extends Model
         'credit_hour',
     ];
 
+
+
     public function prerequisites()
     {
         return $this->belongsToMany(Course::class, 'course_prerequisite', 'course_id', 'prerequisite_id');
@@ -25,6 +27,22 @@ class Course extends Model
     public function prerequisiteFor()
     {
         return $this->belongsToMany(Course::class, 'course_prerequisite', 'prerequisite_id', 'course_id');
+    }
+
+
+
+
+
+    // In your Course model
+    public function availableCourses()
+    {
+        return $this->belongsToMany(Course::class, 'course_prerequisite', 'course_id', 'prerequisite_id')
+            ->whereNotIn('courses.id', function ($query) {
+                $query->select('prerequisite_id')
+                    ->from('course_prerequisite')
+                    ->where('course_id', $this->id);
+            })
+            ->where('courses.id', '!=', $this->id);
     }
 
 

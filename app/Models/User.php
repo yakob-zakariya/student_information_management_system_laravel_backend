@@ -22,10 +22,11 @@ class User extends Authenticatable
      * @var list<string>
      */
 
-    // Make sure this matches what's in your morph map
-    public function getMorphClass()
+
+
+    public function guardName()
     {
-        return 'user';
+        return 'api'; // Match your guard name
     }
 
     protected $fillable = [
@@ -36,7 +37,7 @@ class User extends Authenticatable
         'email',
         'password',
     ];
-    protected $guard_name = 'sanctum'; // Add this property
+
 
     /**
      * The attributes that should be hidden for serialization.

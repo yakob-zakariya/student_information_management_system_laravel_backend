@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Http\Resources\CourseResource;
+use App\Http\Resources\CourseCollection;
+use App\Traits\ApiResponse;
 
 class CourseController extends Controller
 {
+    use ApiResponse;
     public function index()
     {
-        $courses = Course::paginate(5);
-
+        $courses = Course::paginate(10);
         return CourseResource::collection($courses);
     }
 
@@ -26,13 +28,27 @@ class CourseController extends Controller
         ]);
 
         $course = Course::create($validated);
+        $course->load(['prerequisites', 'prerequisiteFor']);
 
-        return new CourseResource($course, 201);
+
+        return $this->successResponse(
+            new CourseResource($course),
+            'Course created successfully',
+            201
+        );
     }
 
     public function show(Course $course)
     {
-        return new CourseResource($course);
+        $course->load(['prerequisites', 'prerequisiteFor', 'availableCourses']);
+
+        // Available courses for prerequisites selection
+        // This will exclude the current course and its prerequisites
+        // $course->available_courses = $course->getAvailableCourses();
+        return $this->successResponse(
+            new CourseResource($course),
+            'Course fetched successfully'
+        );
     }
 
     public function update(Request $request, Course $course)
@@ -54,5 +70,60 @@ class CourseController extends Controller
         return response()->json([
             'message' => 'Course Deleted Successfully'
         ]);
+    }
+
+
+    public function attachPrerequisites(Request $request, Course $course)
+    {
+        // dd("attach");
+        $validated = $request->validate([
+            'prerequisite_ids' => ['required', 'array'],
+            'prerequisite_ids.*' => [
+                'exists:courses,id',
+                function ($attribute, $value, $fail) use ($course) {
+                    if ($value == $course->id) {
+                        $fail('A course cannot be a prerequisite of itself.');
+                    }
+                },
+            ],
+        ]);
+
+        $course->prerequisites()->syncWithoutDetaching($validated['prerequisite_ids']);
+
+        return $this->successResponse(
+            new CourseResource($course->load(['prerequisites', 'prerequisiteFor'])),
+            'Prerequisites attached successfully'
+        );
+    }
+
+    public function detachPrerequisites(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'prerequisite_ids' => ['required', 'array'],
+            'prerequisite_ids.*' => ['exists:courses,id'],
+        ]);
+
+        $course->prerequisites()->detach($validated['prerequisite_ids']);
+
+        return $this->successResponse(
+            new CourseResource($course->load(['prerequisites', 'prerequisiteFor'])),
+            'Prerequisites detached successfully'
+        );
+    }
+
+
+    public function syncPrerequisites(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'prerequisite_ids' => ['required', 'array'],
+            'prerequisite_ids.*' => ['exists:courses,id'],
+        ]);
+
+        $course->prerequisites()->sync($validated['prerequisite_ids']);
+
+        return $this->successResponse(
+            new CourseResource($course->load('prerequisites')),
+            'Prerequisites synced successfully'
+        );
     }
 }

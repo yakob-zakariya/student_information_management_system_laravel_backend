@@ -19,6 +19,9 @@ class CourseResource extends JsonResource
             'name' => $this->name,
             'code' => $this->code,
             'credit_hour' => $this->credit_hour,
+            'prerequisites' => CourseResource::collection($this->whenLoaded('prerequisites')),
+            'prerequisiteFor' => CourseResource::collection($this->whenLoaded('prerequisiteFor')),
+            'available_courses' => CourseResource::collection($this->whenLoaded('availableCourses')),
         ];
     }
 }

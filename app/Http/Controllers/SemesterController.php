@@ -7,15 +7,20 @@ use App\Models\Semester;
 use Illuminate\Http\Request;
 use App\Http\Resources\SemesterResource;
 use App\Rules\CompositeUnique;
+use App\Traits\ApiResponse;
 
 class SemesterController extends Controller
 {
+    use ApiResponse;
     /**
      * Display a listing of the resource.
      */
     public function index(AcademicYear $academicYear)
     {
-        return SemesterResource::collection($academicYear->semesters);
+        return $this->successResponse(
+            SemesterResource::collection($academicYear->semesters),
+            'Semesters fetched successfully'
+        );
     }
 
     /**
@@ -38,7 +43,11 @@ class SemesterController extends Controller
 
         $semester = $academicYear->semesters()->create($validated);
 
-        return new SemesterResource($semester);
+        return $this->successResponse(
+            new SemesterResource($semester),
+            'Semester created successfully',
+            201
+        );
     }
 
     /**
@@ -49,7 +58,11 @@ class SemesterController extends Controller
         if ($academicYear->id !== $semester->academic_year_id) {
             abort(404);
         }
-        return new SemesterResource($semester);
+
+        return $this->successResponse(
+            new SemesterResource($semester),
+            'Semester fetched successfully'
+        );
     }
 
     /**
@@ -74,7 +87,10 @@ class SemesterController extends Controller
 
         $semester->update($validated);
 
-        return new SemesterResource($semester);
+        return $this->successResponse(
+            new SemesterResource($semester),
+            'Semester updated successfully'
+        );
     }
 
     /**

@@ -9,9 +9,12 @@ use App\Models\Batch;
 use App\Http\Resources\SectionResource;
 use App\Rules\CompositeUnique;
 
+use App\Traits\ApiResponse;
+
 
 class SectionController extends Controller
 {
+    use ApiResponse;
     /**
      * Display a listing of the resource.
      */
@@ -20,6 +23,11 @@ class SectionController extends Controller
         if ($batch->department_id !== $department->id) {
             abort(404);
         }
+
+        return $this->successResponse(
+            SectionResource::collection($batch->sections),
+            'Sections Fetched Successfully'
+        );
 
         return  SectionResource::collection($batch->sections);
     }
@@ -42,7 +50,12 @@ class SectionController extends Controller
         ]);
 
         $section = $batch->sections()->create($validated);
-        return new SectionResource($section);
+
+        return $this->successResponse(
+            new SectionResource($section),
+            'Section Created Successfully',
+            201
+        );
     }
 
     /**
@@ -58,8 +71,11 @@ class SectionController extends Controller
             abort(404);
         }
 
+        return $this->successResponse(
+            new SectionResource($section),
+            'Section Fetched Successfully'
 
-        return new SectionResource($section);
+        );
     }
 
     /**
@@ -83,7 +99,11 @@ class SectionController extends Controller
 
 
         $section->update($validated);
-        return new SectionResource($section);
+
+        return $this->successResponse(
+            new SectionResource($section),
+            'Section Updated Successfully'
+        );
     }
 
 

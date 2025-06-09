@@ -15,7 +15,10 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         foreach (Role::cases() as $role) {
-            RoleModel::firstOrCreate(['name' => $role, 'guard_name' => 'sanctum']);
+            RoleModel::firstOrCreate([
+                'name' => $role,
+                'guard_name' => 'api' // Changed from 'sanctum'
+            ]);
         }
     }
 }

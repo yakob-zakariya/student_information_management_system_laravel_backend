@@ -9,15 +9,24 @@ use Illuminate\Support\Facades\DB;
 use App\Enums\Role as RoleEnum;
 use App\Http\Resources\UserResource;
 
+use App\Traits\ApiResponse;
+
 
 class StudentUserController extends Controller
 {
+
+    use ApiResponse;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         $users = User::role(RoleEnum::STUDENT)->get();
+
+        return $this->successResponse(
+            UserResource::collection($users),
+            'Students retrieved successfully.'
+        );
         return UserResource::collection($users);
     }
 
@@ -26,7 +35,7 @@ class StudentUserController extends Controller
      */
     public function store(Request $request)
     {
-
+        $request['role'] = RoleEnum::STUDENT->value;
         $userResource = DB::transaction(function () use ($request) {
             $userController = new UserController();
 
@@ -43,6 +52,11 @@ class StudentUserController extends Controller
             return $userResource;
         });
 
+        return $this->successResponse(
+            $userResource,
+            'Student created successfully.',
+            201
+        );
         return $userResource;
     }
 
@@ -51,7 +65,16 @@ class StudentUserController extends Controller
      */
     public function show(User $user)
     {
-        return new UserResource($user);
+        if (!$user->hasRole(RoleEnum::STUDENT)) {
+            return $this->errorResponse(
+                'User is not a student.',
+                404
+            );
+        }
+        return $this->successResponse(
+            new UserResource($user),
+            'Student retrieved successfully.'
+        );
     }
 
     /**
@@ -59,7 +82,24 @@ class StudentUserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        //
+        if (!$user->hasRole(RoleEnum::STUDENT)) {
+            return $this->errorResponse(
+                'User is not a student.',
+                404
+            );
+        }
+
+        $validated = $request->validate([
+            'batch_id' => ['sometimes', 'integer', 'exists:batches,id'],
+            'section_id' => ['sometimes', 'integer', 'exists:sections,id']
+        ]);
+
+        $user->student()->update($validated);
+
+        return $this->successResponse(
+            new UserResource($user),
+            'Student updated successfully.'
+        );
     }
 
     /**
@@ -67,6 +107,12 @@ class StudentUserController extends Controller
      */
     public function destroy(User $user)
     {
+        if (!$user->hasRole(RoleEnum::STUDENT)) {
+            return $this->errorResponse(
+                'User is not a student.',
+                404
+            );
+        }
         DB::transaction(function () use ($user) {
             $user->student()->delete();
             $user->delete();

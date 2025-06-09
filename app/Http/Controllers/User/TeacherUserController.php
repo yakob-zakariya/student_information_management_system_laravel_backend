@@ -9,9 +9,12 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\DB;
+use App\Enums\Role;
+use App\Traits\ApiResponse;
 
 class TeacherUserController extends Controller
 {
+    use ApiResponse;
     /**
      * Display a listing of the resource.
      */
@@ -21,8 +24,12 @@ class TeacherUserController extends Controller
 
 
         $users = User::role('teacher')->with('teacher')->get();
-        return response()->json($users);
-        return UserResource::collection($users);
+
+
+        return $this->successResponse(
+            UserResource::collection($users),
+            'Teachers retrieved successfully'
+        );
     }
 
     /**
@@ -30,6 +37,7 @@ class TeacherUserController extends Controller
      */
     public function store(Request $request)
     {
+        $request['role'] = Role::TEACHER->value;
         // sleep(5);
         $userResource = DB::transaction(function () use ($request) {
             $userController = new UserController();
@@ -41,7 +49,12 @@ class TeacherUserController extends Controller
             return new UserResource($user);
         });
 
-        return $userResource;
+
+        return $this->successResponse(
+            $userResource,
+            'Teacher created successfully',
+            201
+        );
     }
 
     /**
@@ -49,7 +62,18 @@ class TeacherUserController extends Controller
      */
     public function show(User $user)
     {
-        return new UserResource($user);
+        if ($user->hasRole('teacher')) {
+            return $this->successResponse(
+                new UserResource($user),
+                'Teacher retrieved successfully'
+            );
+        }
+
+        return $this->errorResponse(
+            'User is not a teacher',
+            [],
+            404
+        );
     }
 
     /**
@@ -57,12 +81,22 @@ class TeacherUserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        // sleep(5);
-        $validated = $request->validated();
+        if (!$user->hasRole('teacher')) {
+            return $this->errorResponse(
+                'User is not a teacher',
+                [],
+                404
+            );
+        }
 
+        $validated = $request->validated();
         $user->update($validated);
 
-        return new UserResource($user);
+
+        return $this->successResponse(
+            new UserResource($user),
+            'Teacher updated successfully'
+        );
     }
 
     /**

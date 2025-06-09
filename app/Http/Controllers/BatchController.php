@@ -7,16 +7,23 @@ use App\Models\Department;
 use Illuminate\Http\Request;
 use App\Http\Resources\BatchResource;
 use App\Rules\CompositeUnique;
+use App\Traits\ApiResponse;
 
 class BatchController extends Controller
 {
+    use ApiResponse;
     /**
      * Display a listing of the resource.
      */
     public function index(Department $department)
     {
 
-        return BatchResource::collection($department->batches->load('sections'));
+        // return BatchResource::collection($department->batches->load('sections'));
+
+        return $this->successResponse(
+            BatchResource::collection($department->batches->load('sections')),
+            'Batches Fetched Successfully'
+        );
     }
 
     /**
@@ -36,7 +43,12 @@ class BatchController extends Controller
         $validated['year'] = "Year 1";
 
         $batch = $department->batches()->create($validated);
-        return new BatchResource($batch);
+
+        return $this->successResponse(
+            new BatchResource($batch),
+            'Batch Created Successfully',
+            201
+        );
     }
 
     /**
@@ -50,7 +62,10 @@ class BatchController extends Controller
 
         $batch->load('sections');
 
-        return new BatchResource($batch);
+        return $this->successResponse(
+            new BatchResource($batch),
+            'Batch Fetched Successfully'
+        );
     }
 
     /**
@@ -72,7 +87,12 @@ class BatchController extends Controller
 
 
         $batch->update($validated);
-        return new BatchResource($batch);
+
+        return $this->successResponse(
+            new BatchResource($batch),
+            'Batch Updated Successfully'
+        );
+        // return new BatchResource($batch);
     }
 
     /**
@@ -85,6 +105,8 @@ class BatchController extends Controller
         }
 
         $batch->delete();
+
+
 
         return response()->noContent();
     }

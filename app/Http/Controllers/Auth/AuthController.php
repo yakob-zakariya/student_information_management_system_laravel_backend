@@ -8,42 +8,33 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 
-/**
- * @OA\Post(
- *     path="/api/login",
- *     summary="User Login",
- *     description="Authenticate user and return a token",
- *     tags={"Authentication"},
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             required={"email","password"},
- *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
- *             @OA\Property(property="password", type="string", format="password", example="password123")
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Successful login",
- *         @OA\JsonContent(
- *             @OA\Property(property="token", type="string", example="your-jwt-token")
- *         )
- *     ),
- *     @OA\Response(response=401, description="Unauthorized")
- * )
- */
+use App\Traits\ApiResponse;
+
+
 
 class AuthController extends Controller
 {
+    use ApiResponse;
     public function login(Request $request)
     {
-        // sleep(2);
+
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
         if (!Auth::attempt($credentials)) {
+
+            $errors =
+                ['email' => [
+                    'The provided credentials are incorrect..'
+                ]];
+
+            return $this->errorResponse(
+                $message = 'The Provided credentials are incorrect.',
+                $errors,
+                422
+            );
             return response([
                 'message' => 'The provided credentials are incorrect.',
                 'errors' =>
@@ -60,11 +51,15 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response([
+        $data = [
             'token' => $token,
             'user' => new UserResource($user),
 
-        ]);
+        ];
+
+        return $this->successResponse(
+            $data,
+        );
     }
 
     public function getUser()

@@ -6,13 +6,18 @@ use Illuminate\Http\Request;
 use App\Models\Department;
 use App\Http\Resources\DepartmentResource;
 
+use App\Traits\ApiResponse;
+
 class DepartmentController extends Controller
 {
+    use ApiResponse;
     public function index()
     {
         $departments = Department::with('batches')->get();
-        // dd($departments);
-        return DepartmentResource::collection($departments);
+        return $this->successResponse(
+            DepartmentResource::collection($departments),
+            'Departments Fetched Successfully'
+        );
     }
 
     public function store(Request $request)
@@ -23,7 +28,12 @@ class DepartmentController extends Controller
         ]);
 
         $department = Department::create($request->all());
-        return new DepartmentResource($department);
+
+        return $this->successResponse(
+            new DepartmentResource($department),
+            'Department Created Successfully',
+            201
+        );
     }
 
 
@@ -31,7 +41,11 @@ class DepartmentController extends Controller
     {
 
         $department->load('batches');
-        return new DepartmentResource($department);
+
+        return $this->successResponse(
+            new DepartmentResource($department),
+            'Department Fetched Successfully'
+        );
     }
 
     public function update(Request $request, Department $department)
@@ -42,12 +56,21 @@ class DepartmentController extends Controller
         ]);
 
         $department->update($request->all());
-        return new DepartmentResource($department);
+
+        return $this->successResponse(
+            new DepartmentResource($department),
+            'Department Updated Successfully'
+        );
     }
 
     public function destroy(Department $department)
     {
         $department->delete();
-        return response()->json(['message' => 'Department deleted successfully'], 204);
+
+        return $this->successResponse(
+            null,
+            'Department Deleted Successfully',
+            204
+        );
     }
 }

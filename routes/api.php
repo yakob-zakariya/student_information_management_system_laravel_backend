@@ -103,6 +103,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/courses/{course}', [CourseController::class, 'show'])->middleware('permission:' . PermissionEnum::VIEW_COURSE->value);
     Route::put('/courses/{course}', [CourseController::class, 'update'])->middleware('permission:' . PermissionEnum::UPDATE_COURSE->value);
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->middleware('permission:' . PermissionEnum::DELETE_COURSE->value);
+    // Prerequisites Routes
+    Route::post('/courses/{course}/prerequisites/attach', [CourseController::class, 'attachPrerequisites']);
+    Route::post('/courses/{course}/prerequisites/detach', [CourseController::class, 'detachPrerequisites']);
+    Route::post('/courses/{course}/prerequisites/sync', [CourseController::class, 'syncPrerequisites']);
 });
 
 
