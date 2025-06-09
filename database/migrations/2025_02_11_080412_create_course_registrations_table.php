@@ -18,7 +18,10 @@ return new class extends Migration
             $table->foreignId('semester_id')->constrained()->onDelete('cascade');
             $table->foreignId('section_id')->nullable()->constrained()->nullOnDelete();
 
-            $table->unique(['course_id', 'semester_id', 'student_id', 'section_id']);
+            $table->unique(
+                ['course_id', 'semester_id', 'student_id', 'section_id'],
+                'unique_course_registration'
+            );
             $table->timestamps();
         });
     }
